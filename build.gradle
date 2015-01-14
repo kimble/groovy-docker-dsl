@@ -1,0 +1,49 @@
+plugins {
+  id 'java' 
+  id 'application' 
+  id 'com.github.johnrengelman.shadow' version '1.2.0'
+}
+
+repositories {
+    jcenter()
+}
+
+
+mainClassName = 'com.developerb.dm.DockerManager'
+
+dependencies {
+
+    // Groovy
+    compile 'org.codehaus.groovy:groovy-all:2.3.9',
+            'org.apache.ivy:ivy:2.3.0'
+
+    // Docker
+    compile 'com.github.docker-java:docker-java:0.10.4'
+
+    // Various utilities
+    compile 'org.apache.commons:commons-lang3:3.1',
+            'joda-time:joda-time:2.6',
+            'commons-io:commons-io:2.4',
+            'com.google.guava:guava:18.0'
+
+    // Logging
+    compile 'org.slf4j:slf4j-simple:1.7.9'
+
+
+    // Test dependencies
+    testCompile 'junit:junit:4.12'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.developerb.dm.DockerManager'
+    }
+}
+
+artifacts {
+    archives shadowJar
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.2.1'
+}

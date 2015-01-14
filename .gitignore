@@ -1,0 +1,9 @@
+build
+.git
+.gradle
+.idea
+
+
+*.iml
+*.dot
+*.png
