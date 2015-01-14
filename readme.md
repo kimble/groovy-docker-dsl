@@ -8,6 +8,8 @@ folders containing Dockerfiles for changes and automatically re-build and reboot
 service running inside a container is actually operational before booting the next and rebuild and reboot containers
 as they change.
 
+**Warning:** I've just started this project, I'm sure it has a bunch of bugs, rough edges and other nasty surprises.
+
 
 Build'n'run
 -----------
