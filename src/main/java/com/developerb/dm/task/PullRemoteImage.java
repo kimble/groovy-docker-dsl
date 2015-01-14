@@ -57,6 +57,8 @@ public class PullRemoteImage extends AbstractDockerTask<String> {
      * This should be a lot easier..
      */
     private String stupidWayOfExtractingImageId(DockerClient client, String repoAndImage) {
+        log.info("Extracting image id..");
+
         CreateContainerResponse created = client.createContainerCmd(Joiner.on(":").skipNulls().join(repoAndImage, tag)).exec();
         String imageId = client.inspectContainerCmd(created.getId()).exec().getImageId();
         client.removeContainerCmd(created.getId()).exec();

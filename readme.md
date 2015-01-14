@@ -14,7 +14,7 @@ Build'n'run
 The project is built using Gradle and ships with a wrapper.
 
     ./gradlew shadowJar
-    java -jar build/libs/docker-manager-all.jar src/test/resources/simple-hello-world/test-sample.groovy
+    java -jar build/libs/docker-manager-all.jar src/test/resources/figtest/figtest.groovy
 
 
 Still to do..
@@ -23,3 +23,5 @@ Still to do..
     1. Volumes
     2. Resource constraints (cpu / memory..)
     3. Networking options
+2. Define healthcheck timeout on a per-container basis
+3. Show some kind of progressbar when downloading images

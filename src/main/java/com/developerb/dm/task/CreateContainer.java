@@ -63,7 +63,6 @@ public class CreateContainer extends AbstractDockerTask<CreatedContainer> {
         String containerId = response.getId();
 
         log.info("Created container with id {}", StringUtils.abbreviate(containerId, 12));
-
         return new CreatedContainer(client, containerId, containerName, links, mappedPorts, this);
     }
 
