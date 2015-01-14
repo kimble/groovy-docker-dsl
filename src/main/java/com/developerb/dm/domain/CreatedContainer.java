@@ -59,17 +59,23 @@ public class CreatedContainer extends IdentifiedContainer {
 
         String bootedFromImage = fetchImageId();
 
-        log.info("Booted from: " + bootedFromImage);
+        log.info("Booted from: {}", bootedFromImage);
 
         BootedContainer bootedContainer = new BootedContainer(id, name, bootedFromImage, client);
-        Result result = healthcheck.probeUntil(bootedContainer, Duration.standardSeconds(60), Duration.standardSeconds(3));
 
-        if (result.isHealthy()) {
-            log.info(result.toString());
-            return bootedContainer;
+        if (healthcheck != null) {
+            Result result = healthcheck.probeUntil(bootedContainer, Duration.standardSeconds(60), Duration.standardSeconds(3));
+
+            if (result.isHealthy()) {
+                log.info(result.toString());
+                return bootedContainer;
+            }
+            else {
+                throw new IllegalStateException("Unable to verify health: " + result);
+            }
         }
         else {
-            throw new IllegalStateException("Unable to verify health: " + result);
+            return bootedContainer;
         }
     }
 
