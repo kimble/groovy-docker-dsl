@@ -4,6 +4,11 @@ Groovy Docker DSL
 Think [Fig](http://www.fig.sh/) with a Groovy DSL letting you implement hooks, health checks and monitors
 folders containing Dockerfiles for changes and automatically re-build and reboot containers as needed.
 
+**Motivation:** Fig is great, but I needed something that would allow me to do things like waiting until the
+service running inside a container is actually operational before booting the next and rebuild and reboot containers
+as they change.
+
+
 Build'n'run
 -----------
 The project is built using Gradle and ships with a wrapper.
