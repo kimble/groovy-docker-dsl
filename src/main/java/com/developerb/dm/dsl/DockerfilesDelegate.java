@@ -32,6 +32,13 @@ class DockerfilesDelegate extends AbstractDelegate {
     private final File workingDirectory;
 
     DockerfilesDelegate(DockerClient client, File workingDirectory) {
+        if (workingDirectory == null) {
+            throw new IllegalArgumentException("Working directory is mandatory");
+        }
+        if (client == null) {
+            throw new IllegalArgumentException("Docker client is mandatory");
+        }
+
         this.dockerClient = client;
         this.workingDirectory = workingDirectory;
     }
@@ -80,6 +87,13 @@ class DockerfilesDelegate extends AbstractDelegate {
         private List<ContainerApi> containers = Lists.newArrayList();
 
         public DockerfileDelegate(String imageName, File workingDirectory) {
+            if (workingDirectory == null) {
+                throw new IllegalStateException("Working directory can't be null");
+            }
+            if (!workingDirectory.isDirectory()) {
+                throw new IllegalStateException(workingDirectory + " is not a directory");
+            }
+
             this.workingDirectory = workingDirectory;
             this.log = LoggerFactory.getLogger("image." + imageName);
             this.imageName = imageName;

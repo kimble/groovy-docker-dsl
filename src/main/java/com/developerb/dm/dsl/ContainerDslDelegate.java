@@ -11,7 +11,6 @@ import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +19,7 @@ import static groovy.lang.Closure.DELEGATE_FIRST;
 /**
  * Delegate for 'container' closures in the dsl.
  */
+@SuppressWarnings("UnusedDeclaration")
 class ContainerDslDelegate extends AbstractDelegate {
 
     private final List<ContainerApi> containers = Lists.newArrayList();
@@ -32,12 +32,18 @@ class ContainerDslDelegate extends AbstractDelegate {
         this.containerRepo = containerRepo;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     public void methodMissing(String containerName, Object args) {
+        Object[] arguments = (Object[]) args;
+
+        if (arguments.length == 1 && arguments[0] instanceof Closure) {
+            defineContainer(containerName, (Closure) arguments[0]);
+        }
+    }
+
+    private void defineContainer(String containerName, Closure containerDefinition) {
         Logger log = LoggerFactory.getLogger("container." + containerName);
 
         try {
-            Closure containerDefinition = (Closure) ((Object[])args)[0];
             ContainerDefinitionDelegate delegate = new ContainerDefinitionDelegate(log, containerName);
             containerDefinition.setResolveStrategy(DELEGATE_FIRST);
             containerDefinition.setDelegate(delegate);

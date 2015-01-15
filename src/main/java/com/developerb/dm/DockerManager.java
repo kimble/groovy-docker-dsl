@@ -39,9 +39,14 @@ public class DockerManager {
                 System.err.println(args[0] + " does not exist");
                 System.exit(2);
             }
+            else if (!file.isFile()) {
+                System.err.println(args[0] + " is not a file");
+                System.exit(3);
+            }
             else {
-                CharSource scriptSource = Files.asCharSource(file, Charsets.UTF_8);
-                DockerManager manager = new DockerManager(scriptSource, file.getParentFile());
+                CharSource scriptSource = Files.asCharSource(file.getAbsoluteFile(), Charsets.UTF_8);
+                File workingDirectory = file.getAbsoluteFile().getParentFile();
+                DockerManager manager = new DockerManager(scriptSource, workingDirectory);
                 manager.visualize();
                 Thread thread = manager.bootAndMonitor();
 

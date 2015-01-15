@@ -32,8 +32,6 @@ public class Healthcheck {
         this.timeout = timeout;
         this.interval = interval;
         this.implementation = implementation;
-        this.implementation.setDelegate(new Delegate(log));
-        this.implementation.setResolveStrategy(Closure.DELEGATE_FIRST);
     }
 
     public Result probeUntilTimeout(BootedContainer container) throws InterruptedException {
