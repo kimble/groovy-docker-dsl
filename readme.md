@@ -16,7 +16,7 @@ Build'n'run
 The project is built using Gradle and ships with a wrapper.
 
     ./gradlew shadowJar
-    java -jar build/libs/docker-manager-all.jar src/test/resources/figtest/figtest.groovy
+    java -jar build/libs/groovy-docker-dsl-all.jar src/test/resources/figtest/figtest.groovy
 
 
 Still to do..

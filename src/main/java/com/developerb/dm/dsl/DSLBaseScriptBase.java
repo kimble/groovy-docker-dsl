@@ -8,6 +8,8 @@ import com.github.dockerjava.api.DockerClient;
 import com.google.common.collect.Sets;
 import groovy.lang.Closure;
 import groovy.lang.Script;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Set;
@@ -19,6 +21,9 @@ import static groovy.lang.Closure.DELEGATE_FIRST;
  */
 @SuppressWarnings("UnusedDeclaration")
 public abstract class DSLBaseScriptBase extends Script {
+
+    private final static Logger log = LoggerFactory.getLogger(DSLBaseScriptBase.class);
+
 
     private final Set<ContainerSource> containerSources = Sets.newHashSet();
     private AfterBootHook afterBootHook = new AfterBootHook();
@@ -68,6 +73,21 @@ public abstract class DSLBaseScriptBase extends Script {
 
     public BeforeRebootHook beforeRebootHook() {
         return beforeRebootHook;
+    }
+
+    public void notifySend(String message) {
+        try {
+            int exitCode = new ProcessBuilder("notify-send", message)
+                    .start()
+                    .waitFor();
+
+            if (exitCode != 0) {
+                log.warn("Failed to send notification '{}', notify-send returned {}", message, exitCode);
+            }
+        }
+        catch (Exception ex) {
+            log.warn("Failed to send notification: '{}'", message, ex);
+        }
     }
 
 }

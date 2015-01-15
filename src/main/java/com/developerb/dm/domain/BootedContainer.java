@@ -7,6 +7,12 @@ import org.glassfish.jersey.client.JerseyClient;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.glassfish.jersey.client.JerseyWebTarget;
 
+import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.Socket;
+
 /**
  * Represents a booted container and exposes operations that can be done
  * on a container in this state.
@@ -29,9 +35,47 @@ public class BootedContainer extends IdentifiedContainer {
         return inspect().getState().isRunning();
     }
 
+    public String httpGet(String path) {
+        return httpClient()
+                .path(path)
+                .request()
+                .buildGet()
+                .invoke(String.class);
+    }
+
     public JerseyWebTarget httpClient() {
         JerseyClient client = JerseyClientBuilder.createClient();
         return client.target("http://" + ipAddress());
+    }
+
+    public boolean canOpenTcpSocket(int port) throws IOException {
+        Socket socket = null;
+
+        try {
+            String ip = ipAddress();
+            socket = new Socket(ip, port);
+            return true;
+        } finally {
+            if (socket != null) {
+                socket.close();
+            }
+        }
+    }
+
+    public boolean canOpenUdpSocket(int port) throws IOException {
+        DatagramSocket socket = null;
+
+        try {
+            String ip = ipAddress();
+            InetAddress address = InetAddress.getByName(ip);
+            socket = new DatagramSocket(port, address);
+
+            return true;
+        } finally {
+            if (socket != null) {
+                socket.close();
+            }
+        }
     }
 
     public boolean hasStopped() {
