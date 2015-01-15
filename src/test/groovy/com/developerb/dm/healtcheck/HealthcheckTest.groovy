@@ -18,8 +18,8 @@ class HealthcheckTest {
     @Test
     void returningStringIndicatesHealthyContainer() {
         def healthcheck = new Healthcheck(testLogger, {
-              return "all is well"
-        })
+            return "all is well"
+        }, timeout)
 
         def result = healthcheck.probe(null)
         assert result == Result.healthy("all is well")
@@ -28,8 +28,8 @@ class HealthcheckTest {
     @Test
     void returningTrueIndicatesHealthyContainer() {
         def healthcheck = new Healthcheck(testLogger, {
-              return true
-        })
+            return true
+        }, timeout)
 
         def result = healthcheck.probe(null)
         assert result == Result.healthy()
@@ -38,8 +38,8 @@ class HealthcheckTest {
     @Test
     void returningFalseIndicatesUnHealthyContainer() {
         def healthcheck = new Healthcheck(testLogger, {
-              return false
-        })
+            return false
+        }, timeout)
 
         def result = healthcheck.probe(null)
         assert result == Result.unhealthy()
@@ -48,8 +48,8 @@ class HealthcheckTest {
     @Test
     void returningNullIndicatesUnHealthyContainer() {
         def healthcheck = new Healthcheck(testLogger, {
-              return null
-        })
+            return null
+        }, timeout)
 
         def result = healthcheck.probe(null)
         assert result == Result.unhealthy("Health check returned null")
@@ -60,7 +60,7 @@ class HealthcheckTest {
         def healthcheck = new Healthcheck(testLogger, {
             log.info("Halla")
             return true
-        })
+        }, timeout)
 
         def result = healthcheck.probe(null)
 

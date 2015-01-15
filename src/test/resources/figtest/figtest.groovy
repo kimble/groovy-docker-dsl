@@ -8,7 +8,7 @@ dockerfiles {
 
         containers {
             redis {
-                healthcheck { container ->
+                healthcheck(timeout: 20) { container ->
                     container.canOpenTcpSocket(6379)
                 }
             }
@@ -23,7 +23,7 @@ dockerfiles {
                 linkedTo 'redis:redis'
                 mapPort '80:5000'
 
-                healthcheck { container ->
+                healthcheck(timeout: 20, interval: 2) { container ->
                     String response = container.httpGet("/")
 
                     if (response =~ /Hello... I have been seen \d+ times./) {

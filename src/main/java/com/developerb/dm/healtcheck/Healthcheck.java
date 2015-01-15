@@ -15,20 +15,30 @@ public class Healthcheck {
 
     private final Logger log;
     private final Closure implementation;
+    private final Duration timeout, interval;
 
-    public Healthcheck(Logger log, Closure implementation) {
+    public Healthcheck(Logger log, Closure implementation, Duration timeout, Duration interval) {
         if (implementation == null) {
             throw new IllegalArgumentException("No health check implementation provided");
         }
+        if (timeout == null) {
+            throw new IllegalArgumentException("No timeout supplied");
+        }
+        if (interval == null) {
+            throw new IllegalArgumentException("No interval supplied");
+        }
 
         this.log = log;
+        this.timeout = timeout;
+        this.interval = interval;
         this.implementation = implementation;
         this.implementation.setDelegate(new Delegate(log));
         this.implementation.setResolveStrategy(Closure.DELEGATE_FIRST);
     }
 
-    public Result probeUntil(BootedContainer container, Duration remaining, Duration grace) throws InterruptedException {
+    public Result probeUntilTimeout(BootedContainer container) throws InterruptedException {
         String lastErrorMessage = "No error message";
+        Duration remaining = timeout;
 
         while (true) {
             log.info("Running healthcheck, {} second(s) until giving up ({})", remaining.getStandardSeconds(), lastErrorMessage);
@@ -43,10 +53,10 @@ public class Healthcheck {
             }
 
             lastErrorMessage = result.message();
-            remaining = remaining.minus(grace);
+            remaining = remaining.minus(interval);
 
-            if (remaining.isLongerThan(grace)) {
-                Thread.sleep(grace.getMillis());
+            if (remaining.isLongerThan(interval)) {
+                Thread.sleep(interval.getMillis());
             }
             else {
                 return result;

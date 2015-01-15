@@ -9,6 +9,7 @@ import org.glassfish.jersey.client.JerseyWebTarget;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -19,7 +20,7 @@ public class DockerManagerTest extends TestSupport {
     public void bootSimpleHelloWorldContainer() throws Exception {
         File simpleHelloWorldFolder = copySimpleHelloWorld();
 
-        DockerManager manager = loadManager(simpleHelloWorldFolder);
+        DockerManager manager = loadManager(simpleHelloWorldFolder, "test-sample.groovy");
         ContainerSources containerSource = manager.buildImages();
 
         try {
@@ -43,7 +44,7 @@ public class DockerManagerTest extends TestSupport {
     public void linkedContainers() throws Exception {
         File linkedFolder = copyLinked();
 
-        DockerManager manager = loadManager(linkedFolder);
+        DockerManager manager = loadManager(linkedFolder, "test-sample.groovy");
         ContainerSources containerSource = manager.buildImages();
 
         try {
@@ -67,7 +68,7 @@ public class DockerManagerTest extends TestSupport {
     public void linkedContainersRecursiveReboot() throws Exception {
         File linkedFolder = copyLinked();
 
-        DockerManager manager = loadManager(linkedFolder);
+        DockerManager manager = loadManager(linkedFolder, "test-sample.groovy");
         ContainerSources containerSource = manager.buildImages();
 
         try {
@@ -116,6 +117,16 @@ public class DockerManagerTest extends TestSupport {
         finally {
             containerSource.shutdownAndRemove();
         }
+    }
+
+    @Test
+    public void x() throws IOException {
+        File base = copyFigtest();
+
+        DockerManager manager = loadManager(base, "figtest.groovy");
+        ContainerSources containerSource = manager.buildImages();
+
+
     }
 
 }

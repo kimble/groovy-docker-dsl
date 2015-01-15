@@ -42,6 +42,16 @@ public abstract class TestSupport {
         });
     }
 
+    protected File copyFigtest() throws IOException {
+        return copyTest("figtest", new String[] {
+                "web/app.py",
+                "web/Dockerfile",
+                "web/requirements.txt",
+
+                "figtest.groovy"
+        });
+    }
+
     protected File copyTest(String scenarioName, String[] resources) throws IOException {
         File folder = tmp.newFolder(scenarioName);
 
@@ -62,8 +72,8 @@ public abstract class TestSupport {
         return folder;
     }
 
-    protected DockerManager loadManager(File simpleHelloWorldFolder) {
-        File dslFile = new File(simpleHelloWorldFolder, "test-sample.groovy");
+    protected DockerManager loadManager(File simpleHelloWorldFolder, String dslFilename) {
+        File dslFile = new File(simpleHelloWorldFolder, dslFilename);
         CharSource source = Files.asCharSource(dslFile, Charsets.UTF_8);
         return new DockerManager(source, simpleHelloWorldFolder);
     }

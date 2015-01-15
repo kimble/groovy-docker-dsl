@@ -7,7 +7,6 @@ import com.developerb.dm.healtcheck.Healthcheck;
 import com.developerb.dm.healtcheck.Result;
 import com.developerb.dm.task.CreateContainer;
 import com.github.dockerjava.api.DockerClient;
-import org.joda.time.Duration;
 
 import java.util.Set;
 
@@ -64,7 +63,7 @@ public class CreatedContainer extends IdentifiedContainer {
         BootedContainer bootedContainer = new BootedContainer(id, name, bootedFromImage, client);
 
         if (healthcheck != null) {
-            Result result = healthcheck.probeUntil(bootedContainer, Duration.standardSeconds(60), Duration.standardSeconds(3));
+            Result result = healthcheck.probeUntilTimeout(bootedContainer);
 
             if (result.isHealthy()) {
                 log.info(result.toString());

@@ -8,7 +8,7 @@ folders containing Dockerfiles for changes and automatically re-build and reboot
 service running inside a container is actually operational before booting the next and rebuild and reboot containers
 as they change.
 
-**Warning:** I've just started this project, I'm sure it has a bunch of bugs, rough edges and other nasty surprises.
+**Warning:** I've just started this project, I'm sure it has a lot of bugs and rough edges.
 
 
 Build'n'run
@@ -21,9 +21,9 @@ The project is built using Gradle and ships with a wrapper.
 
 Still to do..
 -------------
-1. Support more Docker features
+1. Support more Docker features like
     1. Volumes
     2. Resource constraints (cpu / memory..)
     3. Networking options
-2. Define healthcheck timeout on a per-container basis
-3. Show some kind of progressbar when downloading images
+2. Show some kind of progressbar when downloading images
+3. Experiment with doing some operations in parallel (Docker might not like this..)
