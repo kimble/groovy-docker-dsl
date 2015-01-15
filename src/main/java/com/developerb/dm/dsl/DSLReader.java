@@ -1,5 +1,6 @@
 package com.developerb.dm.dsl;
 
+import com.developerb.dm.Console;
 import com.developerb.dm.domain.ContainerSource;
 import com.developerb.dm.domain.ContainerSources;
 import com.developerb.dm.dsl.hook.AfterBootHook;
@@ -25,9 +26,11 @@ import java.util.Set;
  */
 public class DSLReader {
 
+    private final Console console;
     private final DockerClient dockerClient;
 
-    public DSLReader(DockerClient dockerClient) {
+    public DSLReader(Console console, DockerClient dockerClient) {
+        this.console = console;
         this.dockerClient = dockerClient;
     }
 
@@ -56,7 +59,7 @@ public class DSLReader {
     private ContainerSources invokeScript(CharSource scriptSource, File workingDirectory, GroovyShell shell) throws IOException {
         try (Reader reader = scriptSource.openStream()) {
             Script script = shell.parse(reader);
-            script.invokeMethod("init", new Object[] { dockerClient, workingDirectory });
+            script.invokeMethod("init", new Object[] { console, dockerClient, workingDirectory });
             script.run();
 
 
@@ -65,7 +68,7 @@ public class DSLReader {
             AfterRebootHook afterRebootHook = invokeMethod(script, "afterRebootHook", AfterRebootHook.class);
             BeforeRebootHook beforeRebootHook = invokeMethod(script, "beforeRebootHook", BeforeRebootHook.class);
 
-            return new ContainerSources(containerSources, afterBootHook, afterRebootHook, beforeRebootHook);
+            return new ContainerSources(console, containerSources, afterBootHook, afterRebootHook, beforeRebootHook);
         }
     }
 

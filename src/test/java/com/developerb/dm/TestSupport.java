@@ -75,6 +75,8 @@ public abstract class TestSupport {
     protected DockerManager loadManager(File simpleHelloWorldFolder, String dslFilename) {
         File dslFile = new File(simpleHelloWorldFolder, dslFilename);
         CharSource source = Files.asCharSource(dslFile, Charsets.UTF_8);
-        return new DockerManager(source, simpleHelloWorldFolder);
+        Console console = new Console("testing");
+
+        return new DockerManager(console, source, simpleHelloWorldFolder);
     }
 }

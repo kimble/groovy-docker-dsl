@@ -1,5 +1,6 @@
 package com.developerb.dm.domain;
 
+import com.developerb.dm.Console;
 import com.developerb.dm.dsl.ContainerApi;
 import com.developerb.dm.dsl.hook.AfterBootHook;
 import com.developerb.dm.dsl.hook.AfterRebootHook;
@@ -10,8 +11,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
 import org.joda.time.Duration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -23,15 +22,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ContainerSources implements Iterable<ContainerSource> {
 
-    private final static Logger log = LoggerFactory.getLogger(ContainerSources.class);
-
+    private final Console console;
+    
     private final Set<ContainerSource> containerSources;
 
     private final AfterBootHook afterBootHook;
     private final AfterRebootHook afterRebootHook;
     private final BeforeRebootHook beforeRebootHook;
 
-    public ContainerSources(Set<ContainerSource> containerSources, AfterBootHook afterBootHook, AfterRebootHook afterRebootHook, BeforeRebootHook beforeRebootHook) {
+    public ContainerSources(Console console, Set<ContainerSource> containerSources, AfterBootHook afterBootHook, AfterRebootHook afterRebootHook, BeforeRebootHook beforeRebootHook) {
+        this.console = console;
         this.containerSources = containerSources;
         this.afterBootHook = afterBootHook;
         this.afterRebootHook = afterRebootHook;
@@ -82,7 +82,7 @@ public class ContainerSources implements Iterable<ContainerSource> {
         }
 
         if (!unBooted.isEmpty()) {
-            log.info("Un-booted containers: {}", Joiner.on(", ").join(unBooted));
+            console.out("Un-booted containers: %s", Joiner.on(", ").join(unBooted));
 
             Stopwatch stopwatch = Stopwatch.createStarted();
             //bootInParallel(unBooted);
@@ -97,7 +97,7 @@ public class ContainerSources implements Iterable<ContainerSource> {
         }
 
         if (!needsRebooting.isEmpty()) {
-            log.info("Need of re-boot: {}", Joiner.on(", ").join(needsRebooting));
+            console.out("Need of re-boot: %s", Joiner.on(", ").join(needsRebooting));
 
             beforeRebootHook.execute (
                     new BeforeRebootHook.Args(needsRebooting)
@@ -146,7 +146,7 @@ public class ContainerSources implements Iterable<ContainerSource> {
                     throw new IllegalStateException("Can't figure out how to start " + queue + ", batch size: " + bc);
                 }
 
-                log.info("Waiting for batch of " + bc);
+                console.out("Waiting for batch of " + bc);
                 for (int i = 0; i < bc; i++) {
                     ContainerApi booted = completionService.take().get();
                     queue.remove(booted);
@@ -175,7 +175,6 @@ public class ContainerSources implements Iterable<ContainerSource> {
                 throw new IllegalStateException("Unable to re-boot: " + queue);
             }
 
-            log.debug("The following containers can be re-booted: {}", Joiner.on(", ").join(batch));
             for (ContainerApi queued : batch) {
                 queued.reboot();
                 queue.remove(queued);

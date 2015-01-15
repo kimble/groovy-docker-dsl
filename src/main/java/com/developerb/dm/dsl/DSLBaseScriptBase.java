@@ -1,5 +1,6 @@
 package com.developerb.dm.dsl;
 
+import com.developerb.dm.Console;
 import com.developerb.dm.domain.ContainerSource;
 import com.developerb.dm.dsl.hook.AfterBootHook;
 import com.developerb.dm.dsl.hook.AfterRebootHook;
@@ -31,15 +32,17 @@ public abstract class DSLBaseScriptBase extends Script {
     private BeforeRebootHook beforeRebootHook = new BeforeRebootHook();
 
     private DockerClient client;
+    private Console console;
     private File workingDirectory;
 
-    public void init(DockerClient client, File workingDirectory) {
+    public void init(Console console, DockerClient client, File workingDirectory) {
         this.workingDirectory = workingDirectory;
+        this.console = console;
         this.client = client;
     }
 
     void dockerfiles(Closure<?> definition) {
-        DockerfilesDelegate delegate = new DockerfilesDelegate(client, workingDirectory);
+        DockerfilesDelegate delegate = new DockerfilesDelegate(console, client, workingDirectory);
         definition.setResolveStrategy(DELEGATE_FIRST);
         definition.setDelegate(delegate);
         definition.run();
@@ -82,7 +85,7 @@ public abstract class DSLBaseScriptBase extends Script {
                     .waitFor();
 
             if (exitCode != 0) {
-                log.warn("Failed to send notification '{}', notify-send returned {}", message, exitCode);
+                console.err("Failed to send notification '" + message + "', notify-send returned " + exitCode);
             }
         }
         catch (Exception ex) {

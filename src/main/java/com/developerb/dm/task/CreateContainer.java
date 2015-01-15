@@ -1,5 +1,6 @@
 package com.developerb.dm.task;
 
+import com.developerb.dm.Console;
 import com.developerb.dm.domain.CreatedContainer;
 import com.developerb.dm.domain.docker.ContainerCommand;
 import com.developerb.dm.domain.docker.ContainerLinks;
@@ -10,32 +11,32 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
 
 /**
  * Create a Docker container and return the id.
  */
 public class CreateContainer extends AbstractDockerTask<CreatedContainer> {
 
-    private final Logger log;
+    private final Console console;
 
     private final String containerName;
+
     private final String image;
 
     private final StopAndRemoveExistingContainer stopAndRemove;
-
     private final ContainerCommand command;
     private final EnvVariables environmentVariables;
     private final ContainerLinks links;
     private final MappedPorts mappedPorts;
 
-    public CreateContainer(String containerName, String image, ContainerCommand command, EnvVariables env, MappedPorts mappedPorts, ContainerLinks links) {
-        this.log = containerLogger(containerName);
+    public CreateContainer(Console console, String containerName, String image, ContainerCommand command, EnvVariables env, MappedPorts mappedPorts, ContainerLinks links) {
+        super(console);
+        this.console = console;
 
         this.containerName = Preconditions.checkNotNull(containerName, "container-name");
         this.mappedPorts = Preconditions.checkNotNull(mappedPorts, "mapped-ports");
         this.image = Preconditions.checkNotNull(image, "image");
-        this.stopAndRemove = new StopAndRemoveExistingContainer(containerName);
+        this.stopAndRemove = new StopAndRemoveExistingContainer(console, containerName);
 
         this.command = command;
         this.environmentVariables = env;
@@ -45,12 +46,12 @@ public class CreateContainer extends AbstractDockerTask<CreatedContainer> {
 
     public CreateContainer replaceCommand(String... newCommands) {
         ContainerCommand newCommand = new ContainerCommand(newCommands);
-        return new CreateContainer(containerName + "_tmp", image, newCommand, environmentVariables, mappedPorts, links);
+        return new CreateContainer(console, containerName + "_tmp", image, newCommand, environmentVariables, mappedPorts, links);
     }
 
     @Override
     public CreatedContainer doIt(DockerClient client) {
-        log.info("Creating container for '{}', based on image '{}'", containerName, image);
+        console.out("Creating container for '%s', based on image '%s'", containerName, image);
 
         stopAndRemove.doIt(client);
 
@@ -62,8 +63,8 @@ public class CreateContainer extends AbstractDockerTask<CreatedContainer> {
         CreateContainerResponse response = query.exec();
         String containerId = response.getId();
 
-        log.info("Created container with id {}", StringUtils.abbreviate(containerId, 12));
-        return new CreatedContainer(client, containerId, containerName, links, mappedPorts, this);
+        console.out("Created container with id %s", StringUtils.abbreviate(containerId, 12));
+        return new CreatedContainer(console, client, containerId, containerName, links, mappedPorts, this);
     }
 
 }

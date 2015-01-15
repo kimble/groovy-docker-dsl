@@ -1,5 +1,6 @@
 package com.developerb.dm.domain;
 
+import com.developerb.dm.Console;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.google.common.base.Preconditions;
@@ -19,15 +20,14 @@ import java.nio.charset.StandardCharsets;
  */
 abstract class IdentifiedContainer {
 
-    protected final Logger log;
+    protected final Console console;
 
     protected final String name;
     protected final String id;
     protected final DockerClient client;
 
-    protected IdentifiedContainer(String name, String id, DockerClient client) {
-        this.log = LoggerFactory.getLogger("container." + name);
-
+    protected IdentifiedContainer(Console console, String name, String id, DockerClient client) {
+        this.console = Preconditions.checkNotNull(console, "Console");
         this.client = Preconditions.checkNotNull(client, "Docker client");
         this.name = Preconditions.checkNotNull(name, "Container name");
         this.id = Preconditions.checkNotNull(id, "Container id");
@@ -100,7 +100,7 @@ abstract class IdentifiedContainer {
     }
 
     public void remove() {
-        log.info("Removing container");
+        console.out("Removing container");
         client.removeContainerCmd(id).exec();
     }
 

@@ -1,5 +1,6 @@
 package com.developerb.dm.task;
 
+import com.developerb.dm.Console;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.BuildImageCmd;
 import org.apache.commons.lang3.StringUtils;
@@ -16,15 +17,13 @@ import java.io.File;
  */
 public class BuildImageFromFolder extends AbstractDockerTask<String> {
 
-    private final Logger log;
-
     private final File folder;
     private final String tag;
     private final String repository;
     private final String imageName;
 
-    public BuildImageFromFolder(File folder, String repository, String imageName, String tag) {
-        this.log = LoggerFactory.getLogger("image." + imageName);
+    public BuildImageFromFolder(Console console, File folder, String repository, String imageName, String tag) {
+        super(console);
 
         this.imageName = imageName;
         this.repository = repository;
@@ -34,7 +33,7 @@ public class BuildImageFromFolder extends AbstractDockerTask<String> {
 
     @Override
     public String doIt(DockerClient client) {
-        log.info("Building image with repository {} and tag {}",
+        console.out("Building image with repository %s and tag %s",
                 repository != null ? repository : "'none'",
                 tag != null ? tag : "'none'");
 
@@ -53,7 +52,7 @@ public class BuildImageFromFolder extends AbstractDockerTask<String> {
         }
         else {
             String fullImageId = client.inspectImageCmd(imageId.trim()).exec().getId();
-            log.info("Got image id: {}", fullImageId);
+            console.out("Got image id: %s", fullImageId);
 
             return fullImageId;
         }

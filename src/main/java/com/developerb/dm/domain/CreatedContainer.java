@@ -1,5 +1,6 @@
 package com.developerb.dm.domain;
 
+import com.developerb.dm.Console;
 import com.developerb.dm.domain.docker.ContainerLinks;
 import com.developerb.dm.domain.docker.MappedPorts;
 import com.developerb.dm.dsl.hook.BeforeHook;
@@ -20,8 +21,8 @@ public class CreatedContainer extends IdentifiedContainer {
     private final CreateContainer createAnotherContainer;
     private final MappedPorts mappedPorts;
 
-    public CreatedContainer(DockerClient client, String containerId, String containerName, ContainerLinks links, MappedPorts mappedPorts, CreateContainer createAnotherContainer) {
-        super(containerName, containerId, client);
+    public CreatedContainer(Console console, DockerClient client, String containerId, String containerName, ContainerLinks links, MappedPorts mappedPorts, CreateContainer createAnotherContainer) {
+        super(console, containerName, containerId, client);
 
         this.createAnotherContainer = createAnotherContainer;
         this.mappedPorts = mappedPorts;
@@ -37,36 +38,36 @@ public class CreatedContainer extends IdentifiedContainer {
     }
 
     private void runAndWait() {
-        log.info("Running and waiting for {}", shortId());
+        console.out("Running and waiting for %s", shortId());
         start();
 
-        log.info("Waiting for container to stop");
+        console.out("Waiting for container to stop");
         client.waitContainerCmd(id).exec();
         client.removeContainerCmd(id).withForce(true).exec();
 
-        log.info("Removed {}", shortId());
+        console.out("Removed %s", shortId());
     }
 
     public BootedContainer boot(BeforeHook before, Healthcheck healthcheck, Set<BootedContainer> dependencies) throws InterruptedException {
-        log.info("Executing before hook associated with {}", shortId());
+        console.out("Executing before hook associated with %s", shortId());
         before.execute(new BeforeHook.Args (
                 this, dependencies
         ));
 
-        log.info("Starting container {}", shortId());
+        console.out("Starting container %s", shortId());
         start();
 
         String bootedFromImage = fetchImageId();
 
-        log.info("Booted from: {}", bootedFromImage);
+        console.out("Booted from: %s", bootedFromImage);
 
-        BootedContainer bootedContainer = new BootedContainer(id, name, bootedFromImage, client);
+        BootedContainer bootedContainer = new BootedContainer(console, id, name, bootedFromImage, client);
 
         if (healthcheck != null) {
             Result result = healthcheck.probeUntilTimeout(bootedContainer);
 
             if (result.isHealthy()) {
-                log.info(result.toString());
+                console.out(result.toString());
                 return bootedContainer;
             }
             else {

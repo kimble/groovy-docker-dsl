@@ -1,5 +1,6 @@
 package com.developerb.dm.dsl;
 
+import com.developerb.dm.Console;
 import com.developerb.dm.domain.BootedContainer;
 import com.developerb.dm.domain.CreatedContainer;
 import com.developerb.dm.domain.docker.ContainerCommand;
@@ -23,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class ContainerApi {
 
-    private final Logger log;
+    private final Console console;
 
     private final DockerClient dockerClient;
     private final String containerName;
@@ -43,13 +44,13 @@ public class ContainerApi {
     private final AtomicReference<BootedContainer> bootedContainer;
     private final AtomicReference<String> imageId;
 
-    public ContainerApi(Logger log, DockerClient dockerClient, String containerName) {
+    public ContainerApi(Console console, DockerClient dockerClient, String containerName) {
         this.bootedContainer = new AtomicReference<>();
         this.imageId = new AtomicReference<>();
 
         this.dockerClient = dockerClient;
         this.containerName = containerName;
-        this.log = log;
+        this.console = console;
     }
 
     public ContainerLinks links() {
@@ -61,7 +62,7 @@ public class ContainerApi {
     }
 
     public void addIncomingLink(ContainerApi container) {
-        log.debug("Registered {} -> {}", container.name(), name());
+        console.out("Registered %s -> %s", container.name(), name());
         incomingLinks.add(container);
     }
 
@@ -132,7 +133,6 @@ public class ContainerApi {
         BootedContainer alreadyBooted = bootedContainer.get();
 
         if (alreadyBooted != null) {
-            log.debug("Already running");
             return alreadyBooted;
         }
         else {
@@ -147,7 +147,7 @@ public class ContainerApi {
             String img = imageId.get();
             if (img != null) {
                 try {
-                    CreateContainer createContainer = new CreateContainer(containerName, img, defaultCommand, environmentVariables, mappedPorts, links);
+                    CreateContainer createContainer = new CreateContainer(console, containerName, img, defaultCommand, environmentVariables, mappedPorts, links);
                     CreatedContainer createdContainer = createContainer.doIt(dockerClient);
                     BootedContainer booted = createdContainer.boot(before, healthcheck, dependencies);
 
@@ -181,7 +181,7 @@ public class ContainerApi {
             needsRebooting.add(this);
             needsRebooting.addAll(findAllDependentContainers(this));
 
-            log.info("{} must be re-booted, which means that these will have to do the same: {}", this, Joiner.on(", ").join(findAllDependentContainers(this)));
+            console.out("%s must be re-booted, which means that these will have to do the same: %s", this, Joiner.on(", ").join(findAllDependentContainers(this)));
         }
 
         return needsRebooting;
@@ -232,7 +232,7 @@ public class ContainerApi {
      * but it turns out to be faster then restarting it(!?)
      */
     public void reboot() {
-        log.info("Rebooting");
+        console.out("Rebooting");
 
         shutdown();
         ensureBooted();

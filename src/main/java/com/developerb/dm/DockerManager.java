@@ -11,8 +11,6 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Stopwatch;
 import com.google.common.io.CharSource;
 import com.google.common.io.Files;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
@@ -23,10 +21,9 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  */
 public class DockerManager {
 
-    private final static Logger log = LoggerFactory.getLogger(DockerManager.class);
-
     private final ContainerSources containerSources;
     private final DockerClient dockerClient;
+    private final Console console;
 
     public static void main(String... args) throws Exception {
         if (args.length < 1) {
@@ -35,39 +32,43 @@ public class DockerManager {
         }
         else {
             File file = new File(args[0]);
+            Console console = new Console(file.getName().replace(".groovy", ""));
+
             if (!file.exists()) {
-                System.err.println(args[0] + " does not exist");
+                console.err(args[0] + " does not exist");
                 System.exit(2);
             }
             else if (!file.isFile()) {
-                System.err.println(args[0] + " is not a file");
+                console.err(args[0] + " is not a file");
                 System.exit(3);
             }
             else {
                 CharSource scriptSource = Files.asCharSource(file.getAbsoluteFile(), Charsets.UTF_8);
                 File workingDirectory = file.getAbsoluteFile().getParentFile();
-                DockerManager manager = new DockerManager(scriptSource, workingDirectory);
-                manager.visualize();
+                DockerManager manager = new DockerManager(console, scriptSource, workingDirectory);
+                manager.visualize(console.subConsole("Graphviz"));
                 Thread thread = manager.bootAndMonitor();
 
                 try {
                     thread.join();
                 }
                 catch (InterruptedException e) {
-                    log.info("Bye bye!");
+                    console.out("Bye bye!");
                 }
             }
         }
     }
 
 
-    public DockerManager(CharSource scriptSource, File workingDirectory) {
-        dockerClient = configureDocker();
-        containerSources = new DSLReader(dockerClient).load(scriptSource, workingDirectory);
+    public DockerManager(Console console, CharSource scriptSource, File workingDirectory) {
+        this.console = console;
+        this.dockerClient = configureDocker();
+        this.containerSources = new DSLReader(console, dockerClient)
+                .load(scriptSource, workingDirectory);
     }
 
-    public void visualize() {
-        Dotter.visualize(containerSources);
+    public void visualize(Console console) {
+        Dotter.visualize(console, containerSources);
     }
 
 
@@ -83,7 +84,7 @@ public class DockerManager {
     }
 
     private Thread startStopJob(DockerClient dockerClient, ContainerSources containerSources) {
-        final Thread stopping = new Thread(new StopAndRemoveAll(containerSources, dockerClient));
+        final Thread stopping = new Thread(new StopAndRemoveAll(console, containerSources, dockerClient));
         stopping.setName("stopper");
         stopping.start();
 
@@ -129,8 +130,6 @@ public class DockerManager {
 
         @Override
         public void run() {
-            log.debug("Looking for changes..");
-
             while (!Thread.interrupted()) {
                 try {
                     Stopwatch stopwatch = Stopwatch.createStarted();
@@ -141,19 +140,19 @@ public class DockerManager {
 
                     long elapsed = stopwatch.elapsed(SECONDS);
                     if (elapsed > 2) {
-                        log.info("Spent {} seconds building images and booting containers", elapsed);
-                        log.info("Hanging around waiting for something to do...");
+                        console.out("Spent %s seconds building images and booting containers", elapsed);
+                        console.out("Hanging around waiting for something to do...");
                     }
 
                     Thread.sleep(10 * 1000);
                 }
                 catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
-                    log.info("Stopping monitoring..");
+                    console.out("Stopping monitoring..");
                 }
                 catch (Exception ex) {
                     Thread.currentThread().interrupt();
-                    log.info("Oh my...", ex);
+                    console.out("Oh my...", ex);
                 }
             }
 
@@ -162,14 +161,14 @@ public class DockerManager {
         private void waitForStopJob() {
             try {
                 if (stopAlreadyRunningContainers.isAlive()) {
-                    log.info("Waiting for stop job to finish");
+                    console.out("Waiting for stop job to finish");
                     stopAlreadyRunningContainers.join();
 
-                    log.info("Already running containers has been stopped");
+                    console.out("Already running containers has been stopped");
                 }
             }
             catch (Exception e) {
-                log.error("Trouble waiting for containers to stop / removed");
+                console.err("Trouble waiting for containers to stop / removed, " + e.getMessage());
             }
         }
 

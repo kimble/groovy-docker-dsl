@@ -1,5 +1,6 @@
 package com.developerb.dm.task;
 
+import com.developerb.dm.Console;
 import com.developerb.dm.domain.ContainerSource;
 import com.developerb.dm.domain.ContainerSources;
 import com.developerb.dm.dsl.ContainerApi;
@@ -10,11 +11,13 @@ import com.github.dockerjava.api.DockerClient;
  */
 public class StopAndRemoveAll implements Runnable {
 
+    private final Console console;
     private final ContainerSources containerSources;
     private final DockerClient client;
 
-    public StopAndRemoveAll(ContainerSources containerSources, DockerClient client) {
+    public StopAndRemoveAll(Console console, ContainerSources containerSources, DockerClient client) {
         this.containerSources = containerSources;
+        this.console = console;
         this.client = client;
     }
 
@@ -22,7 +25,8 @@ public class StopAndRemoveAll implements Runnable {
     public void run() {
         for (ContainerSource containerSource : containerSources) {
             for (ContainerApi container : containerSource.containers()) {
-                StopAndRemoveExistingContainer stopAndRemove = new StopAndRemoveExistingContainer(container.name());
+                Console jobConsole = console.subConsole(container.name());
+                StopAndRemoveExistingContainer stopAndRemove = new StopAndRemoveExistingContainer(jobConsole, container.name());
                 stopAndRemove.doIt(client);
             }
         }

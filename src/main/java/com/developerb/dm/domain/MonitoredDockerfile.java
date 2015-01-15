@@ -1,10 +1,9 @@
 package com.developerb.dm.domain;
 
+import com.developerb.dm.Console;
 import com.developerb.dm.dsl.ContainerApi;
 import com.github.dockerjava.api.DockerClient;
 import com.google.common.hash.HashCode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,7 +15,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class MonitoredDockerfile extends ContainerSource {
 
-    private final Logger log;
+    private final Console console;
 
     private final Dockerfile dockerfile;
 
@@ -25,11 +24,10 @@ public class MonitoredDockerfile extends ContainerSource {
 
     private final Set<MonitoredDockerfile> inheritsFrom;
 
-    public MonitoredDockerfile(Dockerfile dockerfile, Set<MonitoredDockerfile> inheritsFrom, List<ContainerApi> containers) {
+    public MonitoredDockerfile(Console console, Dockerfile dockerfile, Set<MonitoredDockerfile> inheritsFrom, List<ContainerApi> containers) {
         super(containers);
 
-        this.log = LoggerFactory.getLogger("container." + dockerfile.name());
-
+        this.console = console;
         this.inheritsFrom = inheritsFrom;
         this.currentHashCode = new AtomicReference<>();
         this.imageId = new AtomicReference<>();
@@ -39,7 +37,7 @@ public class MonitoredDockerfile extends ContainerSource {
     @Override
     public void buildRecursive(DockerClient client) throws Exception {
         if (hasChanged()) {
-            log.info("Detected a change");
+            console.out("Detected a change");
 
             // Ensures that any Dockerfile we're inheriting from has been re-built
             for (ContainerSource folder : inheritsFrom) {

@@ -29,6 +29,9 @@ dependencies {
     // Logging
     compile 'org.slf4j:slf4j-simple:1.7.9'
 
+    // Console output
+    compile 'org.fusesource.jansi:jansi:1.11'
+
 
     // Test dependencies
     testCompile 'junit:junit:4.12'

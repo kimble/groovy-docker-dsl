@@ -1,5 +1,6 @@
 package com.developerb.dm.dsl;
 
+import com.developerb.dm.Console;
 import com.developerb.dm.dsl.hook.BeforeHook;
 import com.developerb.dm.healtcheck.Healthcheck;
 import com.github.dockerjava.api.DockerClient;
@@ -8,8 +9,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import groovy.lang.Closure;
 import org.joda.time.Duration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -24,12 +23,14 @@ class ContainerDslDelegate extends AbstractDelegate {
 
     private final List<ContainerApi> containers = Lists.newArrayList();
 
+    private final Console console;
     private final DockerClient dockerClient;
     private final DockerfilesDelegate.ContainerRepo containerRepo;
 
-    ContainerDslDelegate(DockerClient dockerClient, DockerfilesDelegate.ContainerRepo containerRepo) {
-        this.dockerClient = dockerClient;
+    ContainerDslDelegate(Console console, DockerClient dockerClient, DockerfilesDelegate.ContainerRepo containerRepo) {
         this.containerRepo = containerRepo;
+        this.dockerClient = dockerClient;
+        this.console = console;
     }
 
     public void methodMissing(String containerName, Object args) {
@@ -41,10 +42,11 @@ class ContainerDslDelegate extends AbstractDelegate {
     }
 
     private void defineContainer(String containerName, Closure containerDefinition) {
-        Logger log = LoggerFactory.getLogger("container." + containerName);
+        Console containerConsole = console.subConsole(containerName);
+
 
         try {
-            ContainerDefinitionDelegate delegate = new ContainerDefinitionDelegate(log, containerName);
+            ContainerDefinitionDelegate delegate = new ContainerDefinitionDelegate(containerConsole, containerName);
             containerDefinition.setResolveStrategy(DELEGATE_FIRST);
             containerDefinition.setDelegate(delegate);
             containerDefinition.run();
@@ -53,7 +55,7 @@ class ContainerDslDelegate extends AbstractDelegate {
             containers.add(builtContainer);
         }
         catch (Exception ex) {
-            log.error("Invalid... {}", containerName, ex); // Todo (throwing an exception here is a bad idea)
+            containerConsole.err("Invalid... " + containerName + ": " + ex.getMessage()); // Todo (throwing an exception here is a bad idea)
         }
     }
 
@@ -65,15 +67,15 @@ class ContainerDslDelegate extends AbstractDelegate {
     class ContainerDefinitionDelegate {
 
         private final ContainerApi containerApi;
-        private final Logger log;
+        private final Console console;
 
 
-        public ContainerDefinitionDelegate(Logger logger, String containerName) {
+        public ContainerDefinitionDelegate(Console console, String containerName) {
             Preconditions.checkNotNull(containerName, "container name");
-            Preconditions.checkNotNull(logger, "log");
+            Preconditions.checkNotNull(console, "console");
 
-            log = logger;
-            containerApi = new ContainerApi(logger, dockerClient, containerName);
+            this.console = console;
+            this.containerApi = new ContainerApi(console, dockerClient, containerName);
         }
 
         public void command(String... command) {
@@ -105,7 +107,7 @@ class ContainerDslDelegate extends AbstractDelegate {
                 throw new IllegalStateException("Don't know what to do with health check parameters: " + parameters.keySet());
             }
 
-            Healthcheck healthcheck = new Healthcheck(log, implementation, timeout, interval);
+            Healthcheck healthcheck = new Healthcheck(console, implementation, timeout, interval);
             containerApi.healthcheck(healthcheck);
         }
 

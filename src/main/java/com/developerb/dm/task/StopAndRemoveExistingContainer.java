@@ -1,9 +1,9 @@
 package com.developerb.dm.task;
 
+import com.developerb.dm.Console;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
 
 import java.util.List;
 
@@ -12,11 +12,10 @@ import java.util.List;
  */
 public class StopAndRemoveExistingContainer extends AbstractDockerTask<Void> {
 
-    private final Logger log;
     private final String containerName;
 
-    public StopAndRemoveExistingContainer(String containerName) {
-        this.log = containerLogger(containerName);
+    public StopAndRemoveExistingContainer(Console console, String containerName) {
+        super(console);
         this.containerName = containerName;
     }
 
@@ -25,7 +24,7 @@ public class StopAndRemoveExistingContainer extends AbstractDockerTask<Void> {
         for (Container container : listAllContainers(client)) {
             for (String name : container.getNames()) {
                 if (name.equals("/" + containerName)) {
-                    log.info("Found existing container name {} ({}), stopping and removing", name, StringUtils.abbreviate(container.getId(), 10));
+                    console.out("Found existing container name %s (%s), stopping and removing", name, StringUtils.abbreviate(container.getId(), 10));
 
                     if (isRunning(client, container.getId())) {
                         stopWithTimeout(client, container.getId(), 2);

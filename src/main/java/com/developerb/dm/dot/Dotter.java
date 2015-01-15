@@ -1,13 +1,12 @@
 package com.developerb.dm.dot;
 
+import com.developerb.dm.Console;
 import com.developerb.dm.domain.ContainerSource;
 import com.developerb.dm.domain.ContainerSources;
 import com.developerb.dm.domain.docker.ContainerLinks;
 import com.developerb.dm.dsl.ContainerApi;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
@@ -16,10 +15,8 @@ import java.io.File;
  */
 public class Dotter {
 
-    private final static Logger log = LoggerFactory.getLogger(Dotter.class);
 
-
-    public static void visualize(ContainerSources containerSource) {
+    public static void visualize(Console console, ContainerSources containerSource) {
         StringBuilder dot = new StringBuilder("digraph containers {\n");
         dot.append("rankdir=LR;\n"); // Left to right
         // dot.append("splines=line;\n"); // Only straight lines
@@ -42,7 +39,7 @@ public class Dotter {
         String dotted = dot.toString();
 
         try {
-            log.info("Generating graph");
+            console.out("Generating graph");
 
             File destination = new File("containers.dot");
             Files.write(dotted, destination, Charsets.UTF_8);
@@ -50,11 +47,11 @@ public class Dotter {
             int exit = process.waitFor();
 
             if (exit != 0) {
-                log.warn("Failed to create graph, exit: " + exit);
+                console.err("Failed to create graph, exit: " + exit);
             }
         }
         catch (Exception ex) {
-            log.warn("Unable to write graph", ex);
+            console.err("Unable to write graph: " + ex.getMessage());
         }
     }
 

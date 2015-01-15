@@ -1,5 +1,6 @@
 package com.developerb.dm.dsl;
 
+import com.developerb.dm.Console;
 import com.developerb.dm.domain.ContainerSource;
 import com.developerb.dm.domain.Dockerfile;
 import com.developerb.dm.domain.MonitoredDockerfile;
@@ -30,15 +31,20 @@ class DockerfilesDelegate extends AbstractDelegate {
 
     private final DockerClient dockerClient;
     private final File workingDirectory;
+    private final Console console;
 
-    DockerfilesDelegate(DockerClient client, File workingDirectory) {
+    DockerfilesDelegate(Console console, DockerClient client, File workingDirectory) {
         if (workingDirectory == null) {
             throw new IllegalArgumentException("Working directory is mandatory");
+        }
+        if (console == null) {
+            throw new IllegalArgumentException("Console is mandatory");
         }
         if (client == null) {
             throw new IllegalArgumentException("Docker client is mandatory");
         }
 
+        this.console = console;
         this.dockerClient = client;
         this.workingDirectory = workingDirectory;
     }
@@ -143,7 +149,7 @@ class DockerfilesDelegate extends AbstractDelegate {
         }
 
         public void containers(Closure definition) {
-            ContainerDslDelegate delegate = new ContainerDslDelegate(dockerClient, new ContainerRepo());
+            ContainerDslDelegate delegate = new ContainerDslDelegate(console, dockerClient, new ContainerRepo());
             definition.setResolveStrategy(DELEGATE_FIRST);
             definition.setDelegate(delegate);
             definition.run();
@@ -151,19 +157,20 @@ class DockerfilesDelegate extends AbstractDelegate {
             containers = delegate.containers();
 
             for (ContainerApi container : containers) {
-                log.info("Defined container " + container);
+                Console containerConsole = console.subConsole(container.name());
+                containerConsole.out("Defined container");
             }
         }
 
         public ContainerSource build() {
             if (image != null) {
-                return new RemoteImage(repository, image, tag, containers);
+                return new RemoteImage(console.subConsole(imageName), repository, image, tag, containers);
             }
             else {
-                BuildImageFromFolder buildImageFromFolder = new BuildImageFromFolder(folder, repository, imageName, tag);
+                BuildImageFromFolder buildImageFromFolder = new BuildImageFromFolder(console.subConsole(imageName), folder, repository, imageName, tag);
                 Dockerfile dockerfile = new Dockerfile(folder, imageName, buildImageFromFolder, inheritsFrom);
 
-                return new MonitoredDockerfile(dockerfile, inheritsFrom, containers);
+                return new MonitoredDockerfile(console, dockerfile, inheritsFrom, containers);
             }
         }
 

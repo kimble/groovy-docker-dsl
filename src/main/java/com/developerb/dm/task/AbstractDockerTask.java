@@ -1,5 +1,6 @@
 package com.developerb.dm.task;
 
+import com.developerb.dm.Console;
 import com.github.dockerjava.api.DockerClient;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
@@ -13,6 +14,12 @@ import java.nio.charset.StandardCharsets;
 
 
 abstract class AbstractDockerTask<T> {
+
+    protected final Console console;
+
+    protected AbstractDockerTask(Console console) {
+        this.console = console;
+    }
 
     protected Logger containerLogger(String containerName) {
         return LoggerFactory.getLogger("container." + containerName);

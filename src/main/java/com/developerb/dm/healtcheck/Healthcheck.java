@@ -1,9 +1,9 @@
 package com.developerb.dm.healtcheck;
 
+import com.developerb.dm.Console;
 import com.developerb.dm.domain.BootedContainer;
 import groovy.lang.Closure;
 import org.joda.time.Duration;
-import org.slf4j.Logger;
 
 /**
  * DSL authors can define health checks for containers.
@@ -13,11 +13,11 @@ import org.slf4j.Logger;
  */
 public class Healthcheck {
 
-    private final Logger log;
+    private final Console log;
     private final Closure implementation;
     private final Duration timeout, interval;
 
-    public Healthcheck(Logger log, Closure implementation, Duration timeout, Duration interval) {
+    public Healthcheck(Console console, Closure implementation, Duration timeout, Duration interval) {
         if (implementation == null) {
             throw new IllegalArgumentException("No health check implementation provided");
         }
@@ -28,7 +28,7 @@ public class Healthcheck {
             throw new IllegalArgumentException("No interval supplied");
         }
 
-        this.log = log;
+        this.log = console;
         this.timeout = timeout;
         this.interval = interval;
         this.implementation = implementation;
@@ -39,7 +39,7 @@ public class Healthcheck {
         Duration remaining = timeout;
 
         while (true) {
-            log.info("Running healthcheck, {} second(s) until giving up ({})", remaining.getStandardSeconds(), lastErrorMessage);
+            log.out("Running healthcheck, %s second(s) until giving up (%s)", remaining.getStandardSeconds(), lastErrorMessage);
 
             if (container.hasStopped()) {
                 return Result.unhealthy("Container has stopped - No point in running health check");

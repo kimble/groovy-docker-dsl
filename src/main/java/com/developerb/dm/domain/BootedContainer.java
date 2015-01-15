@@ -1,5 +1,6 @@
 package com.developerb.dm.domain;
 
+import com.developerb.dm.Console;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.google.common.base.Preconditions;
@@ -9,7 +10,6 @@ import org.glassfish.jersey.client.JerseyWebTarget;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.Socket;
 
@@ -21,8 +21,8 @@ public class BootedContainer extends IdentifiedContainer {
 
     private final String bootedFromImage;
 
-    public BootedContainer(String containerId, String containerName, String bootedFromImage, DockerClient client) {
-        super(containerName, containerId, client);
+    public BootedContainer(Console console, String containerId, String containerName, String bootedFromImage, DockerClient client) {
+        super(console, containerName, containerId, client);
 
         this.bootedFromImage = Preconditions.checkNotNull(bootedFromImage, "Booted from image");
     }
@@ -88,7 +88,7 @@ public class BootedContainer extends IdentifiedContainer {
     }
 
     public void shutdown() {
-        log.info("Shutting down");
+        console.out("Shutting down");
 
         client.stopContainerCmd(id)
                 .withTimeout(2)
