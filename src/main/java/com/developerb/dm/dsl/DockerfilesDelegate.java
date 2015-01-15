@@ -158,7 +158,7 @@ class DockerfilesDelegate extends AbstractDelegate {
 
             for (ContainerApi container : containers) {
                 Console containerConsole = console.subConsole(container.name());
-                containerConsole.out("Defined container");
+                containerConsole.line("Defined container");
             }
         }
 

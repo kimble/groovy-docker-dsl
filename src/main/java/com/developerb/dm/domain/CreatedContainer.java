@@ -38,28 +38,28 @@ public class CreatedContainer extends IdentifiedContainer {
     }
 
     private void runAndWait() {
-        console.out("Running and waiting for %s", shortId());
+        console.line("Running and waiting for %s", shortId());
         start();
 
-        console.out("Waiting for container to stop");
+        console.line("Waiting for container to stop");
         client.waitContainerCmd(id).exec();
         client.removeContainerCmd(id).withForce(true).exec();
 
-        console.out("Removed %s", shortId());
+        console.line("Removed %s", shortId());
     }
 
     public BootedContainer boot(BeforeHook before, Healthcheck healthcheck, Set<BootedContainer> dependencies) throws InterruptedException {
-        console.out("Executing before hook associated with %s", shortId());
+        console.line("Executing before hook associated with %s", shortId());
         before.execute(new BeforeHook.Args (
                 this, dependencies
         ));
 
-        console.out("Starting container %s", shortId());
+        console.line("Starting container %s", shortId());
         start();
 
         String bootedFromImage = fetchImageId();
 
-        console.out("Booted from: %s", bootedFromImage);
+        console.line("Booted from: %s", bootedFromImage);
 
         BootedContainer bootedContainer = new BootedContainer(console, id, name, bootedFromImage, client);
 
@@ -67,7 +67,7 @@ public class CreatedContainer extends IdentifiedContainer {
             Result result = healthcheck.probeUntilTimeout(bootedContainer);
 
             if (result.isHealthy()) {
-                console.out(result.toString());
+                console.line(result.toString());
                 return bootedContainer;
             }
             else {

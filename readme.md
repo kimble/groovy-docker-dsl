@@ -25,5 +25,4 @@ Still to do..
     1. Volumes
     2. Resource constraints (cpu / memory..)
     3. Networking options
-2. Show some kind of progressbar when downloading images
-3. Experiment with doing some operations in parallel (Docker might not like this..)
+2. Experiment with doing some operations in parallel (Docker might not like this..)

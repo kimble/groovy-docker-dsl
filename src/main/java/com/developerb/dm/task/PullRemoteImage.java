@@ -5,10 +5,13 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.PullImageCmd;
 import com.google.common.base.Joiner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.fusesource.jansi.Ansi;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+
+import static org.fusesource.jansi.Ansi.ansi;
 
 
 /**
@@ -32,7 +35,7 @@ public class PullRemoteImage extends AbstractDockerTask<String> {
 
     @Override
     public String doIt(DockerClient client) {
-        console.out("Pulling image with repository %s and tag %s",
+        console.line("Pulling image with repository %s and tag %s",
                 repository != null ? repository : "'none'",
                 tag != null ? tag : "'none'");
 
@@ -44,7 +47,7 @@ public class PullRemoteImage extends AbstractDockerTask<String> {
             throw new IllegalStateException("Failed to get image id, raw response from pulling the image:\n" +response);
         }
         else {
-            console.out("Got image id: %s", imageId);
+            console.line("Got image id: %s", imageId);
             return imageId;
         }
     }
@@ -56,11 +59,12 @@ public class PullRemoteImage extends AbstractDockerTask<String> {
      * This should be a lot easier..
      */
     private String stupidWayOfExtractingImageId(DockerClient client, String repoAndImage) {
-        console.out("Extracting image id..");
+        console.line("Extracting image id..");
 
         CreateContainerResponse created = client.createContainerCmd(Joiner.on(":").skipNulls().join(repoAndImage, tag)).exec();
         String imageId = client.inspectContainerCmd(created.getId()).exec().getImageId();
         client.removeContainerCmd(created.getId()).exec();
+
         return imageId;
     }
 
@@ -71,8 +75,34 @@ public class PullRemoteImage extends AbstractDockerTask<String> {
             command.withTag(tag);
         }
 
-        InputStream responseStream = command.exec();
-        return asString(responseStream);
+        try (InputStream responseStream = command.exec()) {
+            StringBuilder buffer = new StringBuilder();
+            StringBuilder fullResponse = new StringBuilder();
+
+            try (BufferedInputStream in = new BufferedInputStream(responseStream)) {
+                byte[] contents = new byte[1024];
+                int bytesRead;
+
+                while((bytesRead = in.read(contents)) != -1){
+                    String str = new String(contents, 0, bytesRead);
+                    buffer.append(str);
+                    fullResponse.append(str);
+
+                    if (buffer.toString().contains("progressDetail")) {
+                        //console.out(ansi().fg(Ansi.Color.WHITE).a(".").reset().toString());
+                        System.out.print(".");
+                        buffer = new StringBuilder();
+                    }
+                }
+            }
+
+            System.out.println("");
+
+            return fullResponse.toString();
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Unable to read Docker response stream", e);
+        }
     }
 
 }

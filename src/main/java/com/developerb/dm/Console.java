@@ -33,6 +33,16 @@ public class Console {
         printNames(System.out);
 
         String formatted = String.format(message, args);
+        System.out.print(formatted);
+
+        AnsiConsole.systemUninstall();
+    }
+
+    public void line(String message, Object... args) {
+        AnsiConsole.systemInstall();
+        printNames(System.out);
+
+        String formatted = String.format(message, args);
         System.out.println(formatted);
 
         AnsiConsole.systemUninstall();

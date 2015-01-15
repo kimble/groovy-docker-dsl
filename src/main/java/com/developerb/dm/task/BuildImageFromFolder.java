@@ -4,8 +4,6 @@ import com.developerb.dm.Console;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.BuildImageCmd;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
@@ -33,7 +31,7 @@ public class BuildImageFromFolder extends AbstractDockerTask<String> {
 
     @Override
     public String doIt(DockerClient client) {
-        console.out("Building image with repository %s and tag %s",
+        console.line("Building image with repository %s and tag %s",
                 repository != null ? repository : "'none'",
                 tag != null ? tag : "'none'");
 
@@ -52,7 +50,7 @@ public class BuildImageFromFolder extends AbstractDockerTask<String> {
         }
         else {
             String fullImageId = client.inspectImageCmd(imageId.trim()).exec().getId();
-            console.out("Got image id: %s", fullImageId);
+            console.line("Got image id: %s", fullImageId);
 
             return fullImageId;
         }

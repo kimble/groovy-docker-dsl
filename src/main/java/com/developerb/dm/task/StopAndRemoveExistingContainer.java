@@ -24,7 +24,7 @@ public class StopAndRemoveExistingContainer extends AbstractDockerTask<Void> {
         for (Container container : listAllContainers(client)) {
             for (String name : container.getNames()) {
                 if (name.equals("/" + containerName)) {
-                    console.out("Found existing container name %s (%s), stopping and removing", name, StringUtils.abbreviate(container.getId(), 10));
+                    console.line("Found existing container name %s (%s), stopping and removing", name, StringUtils.abbreviate(container.getId(), 10));
 
                     if (isRunning(client, container.getId())) {
                         stopWithTimeout(client, container.getId(), 2);

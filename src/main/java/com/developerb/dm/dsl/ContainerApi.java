@@ -14,7 +14,6 @@ import com.github.dockerjava.api.DockerClient;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
-import org.slf4j.Logger;
 
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -62,7 +61,7 @@ public class ContainerApi {
     }
 
     public void addIncomingLink(ContainerApi container) {
-        console.out("Registered %s -> %s", container.name(), name());
+        console.line("Registered %s -> %s", container.name(), name());
         incomingLinks.add(container);
     }
 
@@ -181,7 +180,7 @@ public class ContainerApi {
             needsRebooting.add(this);
             needsRebooting.addAll(findAllDependentContainers(this));
 
-            console.out("%s must be re-booted, which means that these will have to do the same: %s", this, Joiner.on(", ").join(findAllDependentContainers(this)));
+            console.line("%s must be re-booted, which means that these will have to do the same: %s", this, Joiner.on(", ").join(findAllDependentContainers(this)));
         }
 
         return needsRebooting;
@@ -232,7 +231,7 @@ public class ContainerApi {
      * but it turns out to be faster then restarting it(!?)
      */
     public void reboot() {
-        console.out("Rebooting");
+        console.line("Rebooting");
 
         shutdown();
         ensureBooted();

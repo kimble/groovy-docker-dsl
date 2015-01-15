@@ -39,7 +39,7 @@ public class Dotter {
         String dotted = dot.toString();
 
         try {
-            console.out("Generating graph");
+            console.line("Generating graph");
 
             File destination = new File("containers.dot");
             Files.write(dotted, destination, Charsets.UTF_8);

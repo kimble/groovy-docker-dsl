@@ -53,7 +53,7 @@ public class DockerManager {
                     thread.join();
                 }
                 catch (InterruptedException e) {
-                    console.out("Bye bye!");
+                    console.line("Bye bye!");
                 }
             }
         }
@@ -75,7 +75,7 @@ public class DockerManager {
     public Thread bootAndMonitor() {
         final Thread stopAlreadyRunningContainers = startStopJob(dockerClient, containerSources);
 
-        BuilderMonitoring job = new BuilderMonitoring(stopAlreadyRunningContainers);
+        BuilderMonitoring job = new BuilderMonitoring(stopAlreadyRunningContainers, console.subConsole("monitor"));
         Thread thread = new Thread(job);
         thread.setName("worker");
         thread.start();
@@ -123,9 +123,11 @@ public class DockerManager {
     private class BuilderMonitoring implements Runnable {
 
         private final Thread stopAlreadyRunningContainers;
+        private final Console console;
 
-        public BuilderMonitoring(Thread stopAlreadyRunningContainers) {
+        public BuilderMonitoring(Thread stopAlreadyRunningContainers, Console console) {
             this.stopAlreadyRunningContainers = stopAlreadyRunningContainers;
+            this.console = console;
         }
 
         @Override
@@ -140,19 +142,19 @@ public class DockerManager {
 
                     long elapsed = stopwatch.elapsed(SECONDS);
                     if (elapsed > 2) {
-                        console.out("Spent %s seconds building images and booting containers", elapsed);
-                        console.out("Hanging around waiting for something to do...");
+                        console.line("Spent %s seconds building images and booting containers", elapsed);
+                        console.line("Hanging around waiting for something to do...");
                     }
 
                     Thread.sleep(10 * 1000);
                 }
                 catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
-                    console.out("Stopping monitoring..");
+                    console.line("Stopping monitoring..");
                 }
                 catch (Exception ex) {
                     Thread.currentThread().interrupt();
-                    console.out("Oh my...", ex);
+                    console.line("Oh my...", ex);
                 }
             }
 
@@ -161,10 +163,10 @@ public class DockerManager {
         private void waitForStopJob() {
             try {
                 if (stopAlreadyRunningContainers.isAlive()) {
-                    console.out("Waiting for stop job to finish");
+                    console.line("Waiting for stop job to finish");
                     stopAlreadyRunningContainers.join();
 
-                    console.out("Already running containers has been stopped");
+                    console.line("Already running containers has been stopped");
                 }
             }
             catch (Exception e) {

@@ -37,7 +37,7 @@ public class MonitoredDockerfile extends ContainerSource {
     @Override
     public void buildRecursive(DockerClient client) throws Exception {
         if (hasChanged()) {
-            console.out("Detected a change");
+            console.line("Detected a change");
 
             // Ensures that any Dockerfile we're inheriting from has been re-built
             for (ContainerSource folder : inheritsFrom) {

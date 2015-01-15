@@ -51,7 +51,7 @@ public class CreateContainer extends AbstractDockerTask<CreatedContainer> {
 
     @Override
     public CreatedContainer doIt(DockerClient client) {
-        console.out("Creating container for '%s', based on image '%s'", containerName, image);
+        console.line("Creating container for '%s', based on image '%s'", containerName, image);
 
         stopAndRemove.doIt(client);
 
@@ -63,7 +63,7 @@ public class CreateContainer extends AbstractDockerTask<CreatedContainer> {
         CreateContainerResponse response = query.exec();
         String containerId = response.getId();
 
-        console.out("Created container with id %s", StringUtils.abbreviate(containerId, 12));
+        console.line("Created container with id %s", StringUtils.abbreviate(containerId, 12));
         return new CreatedContainer(console, client, containerId, containerName, links, mappedPorts, this);
     }
 

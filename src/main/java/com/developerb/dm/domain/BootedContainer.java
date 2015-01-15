@@ -88,7 +88,7 @@ public class BootedContainer extends IdentifiedContainer {
     }
 
     public void shutdown() {
-        console.out("Shutting down");
+        console.line("Shutting down");
 
         client.stopContainerCmd(id)
                 .withTimeout(2)

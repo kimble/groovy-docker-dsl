@@ -39,7 +39,7 @@ public class Healthcheck {
         Duration remaining = timeout;
 
         while (true) {
-            log.out("Running healthcheck, %s second(s) until giving up (%s)", remaining.getStandardSeconds(), lastErrorMessage);
+            log.line("Running healthcheck, %s second(s) until giving up (%s)", remaining.getStandardSeconds(), lastErrorMessage);
 
             if (container.hasStopped()) {
                 return Result.unhealthy("Container has stopped - No point in running health check");

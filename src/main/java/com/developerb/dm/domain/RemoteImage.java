@@ -4,8 +4,6 @@ import com.developerb.dm.Console;
 import com.developerb.dm.dsl.ContainerApi;
 import com.developerb.dm.task.PullRemoteImage;
 import com.github.dockerjava.api.DockerClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -35,7 +33,7 @@ public class RemoteImage extends ContainerSource {
     public void buildRecursive(DockerClient client) throws Exception {
         if (!hasFetchedId) {
             String imageId = new PullRemoteImage(console, image, tag, repository).doIt(client);
-            console.out("Resolved '%s' to id '%s'", image, imageId);
+            console.line("Resolved '%s' to id '%s'", image, imageId);
 
             for (ContainerApi container : containers) {
                 container.updateImageId(imageId);

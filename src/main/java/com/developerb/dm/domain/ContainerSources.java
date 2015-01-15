@@ -82,7 +82,7 @@ public class ContainerSources implements Iterable<ContainerSource> {
         }
 
         if (!unBooted.isEmpty()) {
-            console.out("Un-booted containers: %s", Joiner.on(", ").join(unBooted));
+            console.line("Un-booted containers: %s", Joiner.on(", ").join(unBooted));
 
             Stopwatch stopwatch = Stopwatch.createStarted();
             //bootInParallel(unBooted);
@@ -97,7 +97,7 @@ public class ContainerSources implements Iterable<ContainerSource> {
         }
 
         if (!needsRebooting.isEmpty()) {
-            console.out("Need of re-boot: %s", Joiner.on(", ").join(needsRebooting));
+            console.line("Need of re-boot: %s", Joiner.on(", ").join(needsRebooting));
 
             beforeRebootHook.execute (
                     new BeforeRebootHook.Args(needsRebooting)
@@ -146,7 +146,7 @@ public class ContainerSources implements Iterable<ContainerSource> {
                     throw new IllegalStateException("Can't figure out how to start " + queue + ", batch size: " + bc);
                 }
 
-                console.out("Waiting for batch of " + bc);
+                console.line("Waiting for batch of " + bc);
                 for (int i = 0; i < bc; i++) {
                     ContainerApi booted = completionService.take().get();
                     queue.remove(booted);
